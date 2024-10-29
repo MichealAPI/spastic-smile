@@ -12,26 +12,39 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: fuchsia;
+            background-color: red;
+        }
+
+        canvas {
+            border: 2px;
+            border-style: solid;
+            border-color: black;
+
+            /* Shadow */
+            box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
     <script src="p5.min.js"></script>
     <script>
-        let speedX = 1
-        let speedY = 3
+        let speedAmplifier = 1.5
+        let baseSpeedX = 6 * speedAmplifier
+        let baseSpeedY = 4 * speedAmplifier
         let bgChange = 0
-        let x = 100
-        let y = 100
-
-        let faceColor = "yellow"
+        let x = 0
+        let y = 0
 
         let actualBg
+        let myCircle
+        let radius = 25
 
         function setup() {
             createCanvas(600, 600);
             angleMode(DEGREES);
+
+            myCircles = [new Circle(radius, radius, baseSpeedX, baseSpeedY, radius)] // radius is also used to indicate the origin of the circle
+                                                                   // to prevent it from going out of the canvas
 
         }
 
@@ -39,51 +52,89 @@
 
             frameRate(60)
 
-            x = x + speedX;
-            y = y + speedY;
-
             console.log(x)
 
-            if(x >= 500 || x < 100) {
-                console.log("X hitted at " + x)
-                speedX = -speedX
-                hit()
+            background("white");
+            fill(random(255), random(255), random(255));
+
+            for (let circle of myCircles) {
+                circle.check((e) => {
+
+                    if (myCircles.length > 2000) {
+                        return // limitating due to my computer's awful performance
+                    }
+
+                    point = calcNextPoint(circle.x, circle.y, radius / 2)
+
+
+                    myCircles.push(
+                        new Circle(
+                            point.x,
+                             point.y,
+                              circle.speedX * Math.random(),
+                               circle.speedY * Math.random(),
+                                radius
+                            )
+                    )
+                })
+                circle.moveby()
             }
-
-            if(y >= 500 || y < 100) {
-                console.log("Y hitted at " + y)
-                speedY = -speedY
-                hit()
-            }
-
-            background(random(255), random(255), random(255));
-            fill(faceColor);
-
-            // face
-            ellipse(x, y, 200, 200);
-
-            // eyes
-            fill("black");
-            ellipse(x - 50, y - 50, 20, 20);
-            ellipse(x + 50, y - 50, 20, 20);
-
-            // smile
-            noFill();
-            stroke("black");
-            strokeWeight(4);
-            arc(x, y, 100, 100, 0, 180);
-
-
-
         }
 
-        function mousePressed() {
-            faceColor = faceColor == "yellow" ? "green" : "yellow";
+        function calcNextPoint(x, y, amplifier) {
+
+            modifierX = x <= radius ? 1 : -1
+            modifierY = y <= radius ? 1 : -1
+            
+            return {
+                x: x + (amplifier * modifierX),
+                y: y + (amplifier * modifierY)
+            }
         }
 
-        function hit() {
-            actualBg = bgChange % 2 == 0 ? "red" : "blue";
-            bgChange++;
+        class Circle {
+
+            constructor(x, y, speedX, speedY, r) {
+                this.x = x
+                this.y = y
+                this.speedX = speedX
+                this.speedY = speedY
+                this.r = r
+                this.color = (random(255), random(255), random(255));
+
+                console.log("Circle created at " + x + " " + y)
+            }
+
+            draw() {
+                ellipse(this.x, this.y, this.r, this.r)
+            }
+
+            moveby() {
+                this.x = this.x + this.speedX
+                this.y = this.y + this.speedY
+
+                fill(this.color);
+                ellipse(this.x, this.y, this.r, this.r)
+            }
+
+            check(hitConsumer) {
+
+                if (this.x >= (600 - (radius / 2)) || this.x < radius / 2) {
+                    this.speedX = -this.speedX
+
+                    hitConsumer()
+                }
+
+                if (this.y >= (600 - (radius / 2)) || this.y < radius / 2) {
+                    console.log("Y hitted at " + this.y)
+                    //hitConsumer()
+                    this.speedY = -this.speedY
+
+                    hitConsumer()
+                }
+
+            }
+
         }
     </script>
 </body>
