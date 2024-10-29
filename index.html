@@ -28,16 +28,18 @@
 <body>
     <script src="p5.min.js"></script>
     <script>
-        let speedAmplifier = 1.5
+        // can be modified
+        let speedAmplifier = 3
+        let radius = 120
+        let limit = 2000
+        let backgroundColor = "white"
+        let ballBackgroundColor = (e) => { return [random(255), random(255), random(255)]; }
+
+        // should not be modified
         let baseSpeedX = 6 * speedAmplifier
         let baseSpeedY = 4 * speedAmplifier
-        let bgChange = 0
-        let x = 0
-        let y = 0
 
-        let actualBg
-        let myCircle
-        let radius = 25
+        let x, y
 
         function setup() {
             createCanvas(600, 600);
@@ -52,15 +54,13 @@
 
             frameRate(60)
 
-            console.log(x)
-
-            background("white");
-            fill(random(255), random(255), random(255));
+            background(backgroundColor);
+            fill(ballBackgroundColor());
 
             for (let circle of myCircles) {
                 circle.check((e) => {
 
-                    if (myCircles.length > 2000) {
+                    if (myCircles.length > limit) {
                         return // limitating due to my computer's awful performance
                     }
 
@@ -100,9 +100,8 @@
                 this.speedX = speedX
                 this.speedY = speedY
                 this.r = r
-                this.color = (random(255), random(255), random(255));
 
-                console.log("Circle created at " + x + " " + y)
+                this.color = (ballBackgroundColor());
             }
 
             draw() {
@@ -121,15 +120,11 @@
 
                 if (this.x >= (600 - (radius / 2)) || this.x < radius / 2) {
                     this.speedX = -this.speedX
-
                     hitConsumer()
                 }
 
                 if (this.y >= (600 - (radius / 2)) || this.y < radius / 2) {
-                    console.log("Y hitted at " + this.y)
-                    //hitConsumer()
                     this.speedY = -this.speedY
-
                     hitConsumer()
                 }
 
